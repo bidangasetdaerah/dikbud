@@ -14,18 +14,16 @@
   <div class="max-w-7xl mx-auto flex items-center justify-between">
     <div class="text-xl font-bold">DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
     <div class="hidden md:flex space-x-6">
-      <a href="#" class="hover:underline">Data Aset</a>
+      <a href="index.html" class="hover:underline">Data Aset</a>
       <a href="sekolah.html" class="hover:underline">Data Satuan Pendidikan</a>
-      <a href="#" class="hover:underline">Hubungi Kami</a>
+      <a href="https://donggala.e-bmd.co.id/" class="hover:underline">E-BMD Donggala</a>
     </div>
-    <!-- Tombol menu mobile -->
     <button class="md:hidden focus:outline-none" id="mobileMenuBtn">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
   </div>
-  <!-- Dropdown menu versi mobile -->
   <div class="md:hidden hidden mt-2 space-y-2 px-2" id="mobileMenu">
     <a href="#" class="block hover:underline">Data Aset</a>
     <a href="sekolah.html" class="block hover:underline">Data Satuan Pendidikan</a>
@@ -33,7 +31,6 @@
   </div>
 </nav>
 
-<!-- Script Toggle Menu Mobile -->
 <script>
   const menuBtn = document.getElementById("mobileMenuBtn");
   const menu = document.getElementById("mobileMenu");
@@ -42,14 +39,14 @@
   });
 </script>
 
-<!-- CONTENT -->
 <div class="p-4 flex flex-col items-center">
   <h1 class="text-2xl font-bold mb-4 text-center">Data Sekolah</h1>
 
-  <!-- Search Box -->
   <div class="w-full max-w-md mb-4">
     <input type="text" id="searchInput" placeholder="Cari Nama Sekolah, NPSN, Kecamatan..." class="w-full p-2 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400" oninput="applySearch()" />
   </div>
+
+  <div id="resultCount" class="text-sm text-gray-600 text-center mb-2"></div>
 
   <div class="w-full overflow-x-auto">
     <table class="min-w-full bg-white border border-gray-300 rounded-lg">
@@ -128,6 +125,7 @@
     currentPage = 1;
     renderTable();
     renderPagination();
+    document.getElementById('resultCount').innerText = `${filteredData.length} hasil ditemukan`;
   }
 
   function renderTable() {
