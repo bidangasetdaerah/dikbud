@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Sekolah</title>
+  <title>Data Satuan Pendidikan</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
@@ -40,11 +40,11 @@
 </script>
 
 <div class="p-4 flex flex-col items-center">
-  <h1 class="text-2xl font-bold mb-4 text-center">Data Sekolah</h1>
+  <h1 class="text-2xl font-bold mb-4 text-center">Data Satuan Pendidikan</h1>
 
   <!-- Kolom Pencarian -->
-  <div class="mb-3">
-    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari nama sekolah..." class="form-control">
+  <div class="mb-3 w-full max-w-md">
+    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari data sekolah..." class="form-control w-full p-2 border rounded">
   </div>
 
   <div id="resultCount" class="text-sm text-gray-600 text-center mb-2"></div>
@@ -60,7 +60,7 @@
           <th class="py-2 px-4 border">Status</th>
           <th class="py-2 px-4 border">Kecamatan</th>
           <th class="py-2 px-4 border">Dokumen KIB</th>
-          <th class="py-2 px-4 border">Dokumen Barcode</th>
+          <th class="py-2 px-4 border">Barcode</th>
         </tr>
       </thead>
       <tbody id="data-sekolah" class="text-center"></tbody>
@@ -109,24 +109,23 @@
     filteredData = allData;
     renderTable();
     renderPagination();
+    document.getElementById('resultCount').innerText = `${filteredData.length} data ditemukan`;
   }
 
-  function applySearch() {
-    const keyword = document.getElementById('searchInput').value.toLowerCase();
-    filteredData = allData.filter(row => {
-      return (
-        (row.npsn || '').toLowerCase().includes(keyword) ||
-        (row.nama || '').toLowerCase().includes(keyword) ||
-        (row.kecamatan || '').toLowerCase().includes(keyword) ||
-        (row.alamat || '').toLowerCase().includes(keyword) ||
-        (row.kelurahan || '').toLowerCase().includes(keyword) ||
-        (row.status || '').toLowerCase().includes(keyword)
-      );
-    });
+  function filterTable() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    filteredData = allData.filter(item =>
+      (item.npsn || '').toLowerCase().includes(query) ||
+      (item.nama || '').toLowerCase().includes(query) ||
+      (item.kecamatan || '').toLowerCase().includes(query) ||
+      (item.alamat || '').toLowerCase().includes(query) ||
+      (item.kelurahan || '').toLowerCase().includes(query) ||
+      (item.status || '').toLowerCase().includes(query)
+    );
     currentPage = 1;
     renderTable();
     renderPagination();
-    document.getElementById('resultCount').innerText = `${filteredData.length} hasil ditemukan`;
+    document.getElementById('resultCount').innerText = `${filteredData.length} data ditemukan`;
   }
 
   function renderTable() {
@@ -146,24 +145,15 @@
           <td class="py-2 px-4 border">${row.status || '-'}</td>
           <td class="py-2 px-4 border">${row.kecamatan || '-'}</td>
           <td class="py-2 px-4 border">
-            ${row.dokKIB ? `<a href="${row.dokKIB}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-'}
+            ${row.dokKIB ? `<a href="${row.dokKIB}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-' }
           </td>
           <td class="py-2 px-4 border">
-            ${row.dokBarcode ? `<a href="${row.dokBarcode}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-'}
+            ${row.dokBarcode ? `<a href="${row.dokBarcode}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-' }
           </td>
         </tr>
       `;
       tbody.insertAdjacentHTML('beforeend', rowHTML);
     });
-  }
-  function filterTable() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    filteredData = allData.filter(item =>
-      item.namaSekolah.toLowerCase().includes(query)
-    );
-    currentPage = 1;
-    renderTable();
-    renderPagination();
   }
 
   function renderPagination() {
