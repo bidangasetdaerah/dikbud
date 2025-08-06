@@ -7,8 +7,43 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-gray-100 min-h-screen">
 
+<!-- NAVBAR -->
+<nav class="bg-blue-600 text-white px-4 py-3 shadow sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <div class="text-xl font-bold">DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
+    <div class="hidden md:flex space-x-6">
+      <a href="#" class="hover:underline">Data Aset</a>
+      <a href="sekolah.html" class="hover:underline">Data Satuan Pendidikan</a>
+      <a href="#" class="hover:underline">Hubungi Kami</a>
+    </div>
+    <!-- Tombol menu mobile -->
+    <button class="md:hidden focus:outline-none" id="mobileMenuBtn">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </div>
+  <!-- Dropdown menu versi mobile -->
+  <div class="md:hidden hidden mt-2 space-y-2 px-2" id="mobileMenu">
+    <a href="#" class="block hover:underline">Data Aset</a>
+    <a href="sekolah.html" class="block hover:underline">Data Satuan Pendidikan</a>
+    <a href="#" class="block hover:underline">Hubungi Kami</a>
+  </div>
+</nav>
+
+<!-- Script Toggle Menu Mobile -->
+<script>
+  const menuBtn = document.getElementById("mobileMenuBtn");
+  const menu = document.getElementById("mobileMenu");
+  menuBtn.addEventListener("click", () => {
+    menu.classList.toggle("hidden");
+  });
+</script>
+
+<!-- CONTENT -->
+<div class="p-4 flex flex-col items-center">
   <h1 class="text-2xl font-bold mb-4 text-center">Data Sekolah</h1>
 
   <!-- Search Box -->
@@ -35,114 +70,111 @@
   </div>
 
   <div class="flex justify-center mt-4 space-x-2" id="pagination"></div>
+</div>
 
-  <script>
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(loadData);
+<script>
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(loadData);
 
-    let allData = [];
-    let filteredData = [];
-    const perPage = 10;
-    let currentPage = 1;
+  let allData = [];
+  let filteredData = [];
+  const perPage = 10;
+  let currentPage = 1;
 
-    function loadData() {
-      const query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/152oNQyrJEeg-xW3okB2LKbGIUapxDakDMCbDjqpDl3U/gviz/tq?sheet=sekolah');
-      query.send(handleQueryResponse);
+  function loadData() {
+    const query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/152oNQyrJEeg-xW3okB2LKbGIUapxDakDMCbDjqpDl3U/gviz/tq?sheet=sekolah');
+    query.send(handleQueryResponse);
+  }
+
+  function handleQueryResponse(response) {
+    if (response.isError()) {
+      console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+      return;
     }
 
-    function handleQueryResponse(response) {
-      if (response.isError()) {
-        console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
-        return;
-      }
+    const data = response.getDataTable();
+    allData = [];
 
-      const data = response.getDataTable();
-      allData = [];
-
-      for (let i = 1; i < data.getNumberOfRows(); i++) {
-        allData.push({
-          npsn: data.getValue(i, 1),
-          nama: data.getValue(i, 2),
-          alamat: data.getValue(i, 3),
-          kelurahan: data.getValue(i, 4),
-          status: data.getValue(i, 5),
-          kecamatan: data.getValue(i, 6),
-          dokKIB: data.getValue(i, 7),
-          dokBarcode: data.getValue(i, 8)
-        });
-      }
-
-      filteredData = allData; // awalnya semua data
-      renderTable();
-      renderPagination();
-    }
-
-    function applySearch() {
-      const keyword = document.getElementById('searchInput').value.toLowerCase();
-
-      filteredData = allData.filter(row => {
-        return (
-          (row.npsn || '').toLowerCase().includes(keyword) ||
-          (row.nama || '').toLowerCase().includes(keyword) ||
-          (row.kecamatan || '').toLowerCase().includes(keyword) ||
-          (row.alamat || '').toLowerCase().includes(keyword) ||
-          (row.kelurahan || '').toLowerCase().includes(keyword) ||
-          (row.status || '').toLowerCase().includes(keyword)
-        );
-      });
-
-      currentPage = 1;
-      renderTable();
-      renderPagination();
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById('data-sekolah');
-      tbody.innerHTML = '';
-
-      const start = (currentPage - 1) * perPage;
-      const end = start + perPage;
-      const pageData = filteredData.slice(start, end);
-
-      pageData.forEach(row => {
-        const rowHTML = `
-          <tr class="border-b">
-            <td class="py-2 px-4 border">${row.npsn || '-'}</td>
-            <td class="py-2 px-4 border">${row.nama || '-'}</td>
-            <td class="py-2 px-4 border">${row.alamat || '-'}</td>
-            <td class="py-2 px-4 border">${row.kelurahan || '-'}</td>
-            <td class="py-2 px-4 border">${row.status || '-'}</td>
-            <td class="py-2 px-4 border">${row.kecamatan || '-'}</td>
-            <td class="py-2 px-4 border">
-              ${row.dokKIB ? `<a href="${row.dokKIB}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-'}
-            </td>
-            <td class="py-2 px-4 border">
-              ${row.dokBarcode ? `<a href="${row.dokBarcode}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-'}
-            </td>
-          </tr>
-        `;
-        tbody.insertAdjacentHTML('beforeend', rowHTML);
+    for (let i = 1; i < data.getNumberOfRows(); i++) {
+      allData.push({
+        npsn: data.getValue(i, 1),
+        nama: data.getValue(i, 2),
+        alamat: data.getValue(i, 3),
+        kelurahan: data.getValue(i, 4),
+        status: data.getValue(i, 5),
+        kecamatan: data.getValue(i, 6),
+        dokKIB: data.getValue(i, 7),
+        dokBarcode: data.getValue(i, 8)
       });
     }
 
-    function renderPagination() {
-      const pagination = document.getElementById('pagination');
-      pagination.innerHTML = '';
+    filteredData = allData;
+    renderTable();
+    renderPagination();
+  }
 
-      const totalPages = Math.ceil(filteredData.length / perPage);
+  function applySearch() {
+    const keyword = document.getElementById('searchInput').value.toLowerCase();
+    filteredData = allData.filter(row => {
+      return (
+        (row.npsn || '').toLowerCase().includes(keyword) ||
+        (row.nama || '').toLowerCase().includes(keyword) ||
+        (row.kecamatan || '').toLowerCase().includes(keyword) ||
+        (row.alamat || '').toLowerCase().includes(keyword) ||
+        (row.kelurahan || '').toLowerCase().includes(keyword) ||
+        (row.status || '').toLowerCase().includes(keyword)
+      );
+    });
+    currentPage = 1;
+    renderTable();
+    renderPagination();
+  }
 
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        btn.className = `px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`;
-        btn.addEventListener('click', () => {
-          currentPage = i;
-          renderTable();
-          renderPagination();
-        });
-        pagination.appendChild(btn);
-      }
+  function renderTable() {
+    const tbody = document.getElementById('data-sekolah');
+    tbody.innerHTML = '';
+    const start = (currentPage - 1) * perPage;
+    const end = start + perPage;
+    const pageData = filteredData.slice(start, end);
+
+    pageData.forEach(row => {
+      const rowHTML = `
+        <tr class="border-b">
+          <td class="py-2 px-4 border">${row.npsn || '-'}</td>
+          <td class="py-2 px-4 border">${row.nama || '-'}</td>
+          <td class="py-2 px-4 border">${row.alamat || '-'}</td>
+          <td class="py-2 px-4 border">${row.kelurahan || '-'}</td>
+          <td class="py-2 px-4 border">${row.status || '-'}</td>
+          <td class="py-2 px-4 border">${row.kecamatan || '-'}</td>
+          <td class="py-2 px-4 border">
+            ${row.dokKIB ? `<a href="${row.dokKIB}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-'}
+          </td>
+          <td class="py-2 px-4 border">
+            ${row.dokBarcode ? `<a href="${row.dokBarcode}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-'}
+          </td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML('beforeend', rowHTML);
+    });
+  }
+
+  function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
+    const totalPages = Math.ceil(filteredData.length / perPage);
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement('button');
+      btn.innerText = i;
+      btn.className = `px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`;
+      btn.addEventListener('click', () => {
+        currentPage = i;
+        renderTable();
+        renderPagination();
+      });
+      pagination.appendChild(btn);
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
