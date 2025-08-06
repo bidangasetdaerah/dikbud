@@ -39,9 +39,9 @@
       <thead class="table-dark">
         <tr>
           <th class="text-center align-middle" style="width: 30px;">No</th>
-          <th class="text-center align-middle"style="width: 130px;">Nama Sekolah</th>
-          <th class="text-center align-middle"style="width: 130px;">Unduh Dokumen</th>
-          <th class="text-center align-middle"style="width: 130px;">Kecamtan</th>
+          <th class="text-center align-middle" style="width: 130px;">Nama Sekolah</th>
+          <th class="text-center align-middle" style="width: 130px;">Unduh Dokumen</th>
+          <th class="text-center align-middle" style="width: 130px;">Kecamatan</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -52,7 +52,6 @@
   <div class="flex justify-center mt-4" id="pagination"></div>
 </div>
 
-<!-- Script -->
 <script>
   const sheetID = '1gqpPX2e6LkED0r7Jw5xThVjGP7xX8k_AtyDAT5-31E4';
   const sheetName = 'Sheet1';
@@ -70,9 +69,10 @@
       const rows = json.table.rows;
 
       for (let i = 1; i < rows.length; i++) {
-        const namaSekolah = rows[i].c[0] ? rows[i].c[0].v : '';
-        const linkDrive = rows[i].c[1] ? rows[i].c[1].v : '';
-        allData.push({ namaSekolah, linkDrive });
+        const namaSekolah = rows[i].c[0]?.v || '';
+        const linkDrive   = rows[i].c[1]?.v || '';
+        const kecamatan   = rows[i].c[2]?.v || '';
+        allData.push({ namaSekolah, linkDrive, kecamatan });
       }
 
       filteredData = [...allData];
@@ -94,6 +94,7 @@
         <td class="text-center">${start + index + 1}</td>
         <td>${item.namaSekolah}</td>
         <td class="text-center"><a href="${item.linkDrive}" target="_blank" class="eye-icon">👁</a></td>
+        <td class="text-center">${item.kecamatan}</td>
       `;
       tableBody.appendChild(tr);
     });
