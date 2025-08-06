@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Satuan Pendidikan</title>
+  <title>Data Satuan Pendidikan (CSV)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -14,13 +13,13 @@
   <div class="max-w-7xl mx-auto flex items-center justify-between">
     <div class="text-xl font-bold">DINAS PENDIDIKAN DAN KEBUDAYAAN</div>
     <div class="hidden md:flex space-x-6">
-      <a href="index.html" class="hover:underline">Beranda</a>
+      <a href="index.html" class="hover:underline">Data Aset</a>
       <a href="sekolah.html" class="hover:underline">Data Satuan Pendidikan</a>
       <a href="https://donggala.e-bmd.co.id/" class="hover:underline">E-BMD Donggala</a>
     </div>
     <button class="md:hidden focus:outline-none" id="mobileMenuBtn">
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      <svg class="w-6 h-6" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
       </svg>
     </button>
   </div>
@@ -30,31 +29,27 @@
     <a href="https://donggala.e-bmd.co.id/" class="block hover:underline">E-BMD Donggala</a>
   </div>
 </nav>
-
 <script>
-  const menuBtn = document.getElementById("mobileMenuBtn");
-  const menu = document.getElementById("mobileMenu");
-  menuBtn.addEventListener("click", () => {
-    menu.classList.toggle("hidden");
+  document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+    document.getElementById("mobileMenu").classList.toggle("hidden");
   });
 </script>
 
 <div class="p-4 flex flex-col items-center">
   <h1 class="text-2xl font-bold mb-4 text-center">Data Satuan Pendidikan</h1>
 
-  <!-- Kolom Pencarian -->
   <div class="mb-3 w-full max-w-md">
-    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari data sekolah..." class="form-control w-full p-2 border rounded">
+    <input id="searchInput" type="text" onkeyup="filterTable()" placeholder="Cari sekolah / NPSN / Kecamatan..." class="w-full p-2 border rounded" />
   </div>
 
   <div id="resultCount" class="text-sm text-gray-600 text-center mb-2"></div>
 
   <div class="w-full overflow-x-auto">
-    <table class="min-w-full bg-white border border-gray-300 rounded-lg">
+    <table class="min-w-full bg-white border rounded-lg">
       <thead class="bg-gray-200">
         <tr>
           <th class="py-2 px-4 border">NPSN</th>
-          <th class="py-2 px-4 border">Nama Satuan Pendidikan</th>
+          <th class="py-2 px-4 border">Nama Sekolah</th>
           <th class="py-2 px-4 border">Alamat</th>
           <th class="py-2 px-4 border">Kelurahan</th>
           <th class="py-2 px-4 border">Status</th>
@@ -63,7 +58,7 @@
           <th class="py-2 px-4 border">Barcode</th>
         </tr>
       </thead>
-      <tbody id="data-sekolah" class="text-center"></tbody>
+      <tbody id="dataBody" class="text-center"></tbody>
     </table>
   </div>
 
@@ -71,105 +66,83 @@
 </div>
 
 <script>
-  google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(loadData);
+  const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzDGHCw-E29ViqHSyUB2TX9bHqoXDtOB8bgo_A4eyzRlj8uRF7lVT7wfPRYc‑kah8MWXlm‑u3Am5Tt/pub?gid=0&single=true&output=csv';
 
-  let allData = [];
-  let filteredData = [];
+  let allData = [], filteredData = [];
   const perPage = 25;
   let currentPage = 1;
 
-  function loadData() {
-    const query = new google.visualization.Query('https://docs.google.com/spreadsheets/d/152oNQyrJEeg-xW3okB2LKbGIUapxDakDMCbDjqpDl3U/gviz/tq?sheet=sekolah');
-    query.send(handleQueryResponse);
-  }
-
-  function handleQueryResponse(response) {
-    if (response.isError()) {
-      console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
-      return;
-    }
-
-    const data = response.getDataTable();
-    allData = [];
-
-    for (let i = 1; i < data.getNumberOfRows(); i++) {
-      allData.push({
-        npsn: data.getValue(i, 1),
-        nama: data.getValue(i, 2),
-        alamat: data.getValue(i, 3),
-        kelurahan: data.getValue(i, 4),
-        status: data.getValue(i, 5),
-        kecamatan: data.getValue(i, 6),
-        dokKIB: data.getValue(i, 7),
-        dokBarcode: data.getValue(i, 8)
+  fetch(csvUrl)
+    .then(res => res.text())
+    .then(text => {
+      const rows = text.trim().split('\\n').map(r => r.split(','));
+      const headers = rows.shift().map(h => h.trim());
+      rows.forEach(cells => {
+        const obj = {};
+        headers.forEach((h,i) => obj[h] = (cells[i] || '').trim());
+        allData.push(obj);
       });
-    }
-
-    filteredData = allData;
-    renderTable();
-    renderPagination();
-    document.getElementById('resultCount').innerText = `${filteredData.length} data ditemukan`;
-  }
+      filteredData = allData;
+      updateResultCount();
+      renderTable();
+      renderPagination();
+    });
 
   function filterTable() {
-    const query = document.getElementById("searchInput").value.toLowerCase();
-    filteredData = allData.filter(item =>
-      (item.npsn || '').toLowerCase().includes(query) ||
-      (item.nama || '').toLowerCase().includes(query) ||
-      (item.kecamatan || '').toLowerCase().includes(query) ||
-      (item.alamat || '').toLowerCase().includes(query) ||
-      (item.kelurahan || '').toLowerCase().includes(query) ||
-      (item.status || '').toLowerCase().includes(query)
-    );
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    filteredData = allData.filter(item => (
+      (item['NPSN'] || '').toLowerCase().includes(q) ||
+      (item['Nama Satuan Pendidikan'] || '').toLowerCase().includes(q) ||
+      (item['Alamat'] || '').toLowerCase().includes(q) ||
+      (item['Kelurahan'] || '').toLowerCase().includes(q) ||
+      (item['Status'] || '').toLowerCase().includes(q) ||
+      (item['Kecamatan'] || '').toLowerCase().includes(q)
+    ));
     currentPage = 1;
+    updateResultCount();
     renderTable();
     renderPagination();
+  }
+
+  function updateResultCount() {
     document.getElementById('resultCount').innerText = `${filteredData.length} data ditemukan`;
   }
 
   function renderTable() {
-    const tbody = document.getElementById('data-sekolah');
+    const tbody = document.getElementById('dataBody');
     tbody.innerHTML = '';
     const start = (currentPage - 1) * perPage;
-    const end = start + perPage;
-    const pageData = filteredData.slice(start, end);
-
-    pageData.forEach(row => {
-      const rowHTML = `
-        <tr class="border-b">
-          <td class="py-2 px-4 border">${row.npsn || '-'}</td>
-          <td class="py-2 px-4 border">${row.nama || '-'}</td>
-          <td class="py-2 px-4 border">${row.alamat || '-'}</td>
-          <td class="py-2 px-4 border">${row.kelurahan || '-'}</td>
-          <td class="py-2 px-4 border">${row.status || '-'}</td>
-          <td class="py-2 px-4 border">${row.kecamatan || '-'}</td>
-          <td class="py-2 px-4 border">
-            ${row.dokKIB ? `<a href="${row.dokKIB}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-' }
-          </td>
-          <td class="py-2 px-4 border">
-            ${row.dokBarcode ? `<a href="${row.dokBarcode}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-' }
-          </td>
-        </tr>
+    filteredData.slice(start, start + perPage).forEach(row => {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b';
+      tr.innerHTML = `
+        <td class="py-2 px-4 border">${row['NPSN'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Nama Satuan Pendidikan'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Alamat'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Kelurahan'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Status'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Kecamatan'] || '-'}</td>
+        <td class="py-2 px-4 border">${row['Dokumen KIB'] ? `<a href="${row['Dokumen KIB']}" target="_blank" class="text-blue-500 underline">Lihat KIB</a>` : '-'}</td>
+        <td class="py-2 px-4 border">${row['Dokumen Barcode'] ? `<a href="${row['Dokumen Barcode']}" target="_blank" class="text-blue-500 underline">Lihat Barcode</a>` : '-'}</td>
       `;
-      tbody.insertAdjacentHTML('beforeend', rowHTML);
+      tbody.appendChild(tr);
     });
   }
 
   function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    pagination.innerHTML = '';
-    const totalPages = Math.ceil(filteredData.length / perPage);
-    for (let i = 1; i <= totalPages; i++) {
+    const container = document.getElementById('pagination');
+    container.innerHTML = '';
+    const total = Math.ceil(filteredData.length / perPage);
+    for (let i = 1; i <= total; i++) {
       const btn = document.createElement('button');
-      btn.innerText = i;
+      btn.textContent = i;
       btn.className = `px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'}`;
-      btn.addEventListener('click', () => {
+      btn.onclick = () => {
         currentPage = i;
         renderTable();
         renderPagination();
-      });
-      pagination.appendChild(btn);
+      };
+      container.appendChild(btn);
     }
   }
 </script>
