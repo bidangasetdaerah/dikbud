@@ -3,40 +3,87 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Data Aset SMPN 10 Banawa Selatan</title>
+<title>BIDANG ASET DAERAH</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 <style>
   body { font-family: Arial, sans-serif; }
   .thumbnail { max-width: 100px; max-height: 100px; object-fit: contain; }
+  .sidebar {
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 1rem;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    width: 250px;
+    overflow-y: auto;
+  }
+  .content {
+    margin-left: 260px; /* supaya tidak ketimpa sidebar */
+    padding: 1rem;
+  }
 </style>
 </head>
 <body>
 
-<div class="container my-4">
-  <h2 class="mb-4">Data Aset Peralatan dan Mesin</h2>
+<!-- Sidebar -->
+<div class="sidebar">
+  <h5 class="px-3">BIDANG ASET DAERAH</h5>
+  <ul class="nav flex-column px-2">
+    <li class="nav-item">
+      <a class="nav-link" href="#">KIB B</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">KIB C</a>
+    </li>
+    <li class="nav-item">
+      <div class="dropdown px-2 my-2">
+        <button class="btn btn-outline-primary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Rekap KIB B
+        </button>
+        <ul class="dropdown-menu w-100" id="rekapKIBB"></ul>
+      </div>
+    </li>
+    <li class="nav-item">
+      <div class="dropdown px-2 my-2">
+        <button class="btn btn-outline-success w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          Rekap KIB C
+        </button>
+        <ul class="dropdown-menu w-100" id="rekapKIBC"></ul>
+      </div>
+    </li>
+  </ul>
+</div>
 
-  <div class="row mb-3">
-    <div class="col-md-6 mb-2">
-      <input type="text" id="searchInput" class="form-control" placeholder="Cari data..." />
+<!-- Main Content -->
+<div class="content">
+  <div class="container-fluid">
+    <h2 class="mb-4">Data Aset Peralatan dan Mesin</h2>
+
+    <div class="row mb-3">
+      <div class="col-md-6 mb-2">
+        <input type="text" id="searchInput" class="form-control" placeholder="Cari data..." />
+      </div>
+      <div class="col-md-6 mb-2">
+        <select id="kecamatanFilter" class="form-select">
+          <option value="">Semua Kecamatan</option>
+        </select>
+      </div>
     </div>
-    <div class="col-md-6 mb-2">
-      <select id="kecamatanFilter" class="form-select">
-        <option value="">Semua Kecamatan</option>
-      </select>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+        <thead id="tableHead" class="table-light"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
-  </div>
 
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped align-middle">
-      <thead id="tableHead" class="table-light"></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+    <nav>
+      <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
   </div>
-
-  <nav>
-    <ul class="pagination justify-content-center" id="pagination"></ul>
-  </nav>
 </div>
 
 <!-- Modal Preview -->
@@ -69,6 +116,7 @@ fetch(sheetURL)
     filteredData = [...fullData];
     renderTableHeader();
     renderFilterOptions();
+    renderSidebarDropdowns(); // isi dropdown sidebar
     applyFilters();
   });
 
@@ -178,6 +226,24 @@ function renderFilterOptions() {
     opt.value = v;
     opt.textContent = v;
     select.appendChild(opt);
+  });
+}
+
+function renderSidebarDropdowns() {
+  const kecamatanIndex = headers.findIndex(h => h.toLowerCase().includes("kecamatan"));
+  if (kecamatanIndex === -1) return;
+  const values = [...new Set(fullData.map(r => r[kecamatanIndex]).filter(v => v))];
+
+  const rekapB = document.getElementById("rekapKIBB");
+  const rekapC = document.getElementById("rekapKIBC");
+  values.forEach(v => {
+    const liB = document.createElement("li");
+    liB.innerHTML = `<a class="dropdown-item" href="#">${v}</a>`;
+    rekapB.appendChild(liB);
+
+    const liC = document.createElement("li");
+    liC.innerHTML = `<a class="dropdown-item" href="#">${v}</a>`;
+    rekapC.appendChild(liC);
   });
 }
 
