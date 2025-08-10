@@ -21,8 +21,47 @@
     overflow-y: auto;
   }
   .content {
-    margin-left: 260px; /* supaya tidak ketimpa sidebar */
+    margin-left: 260px;
     padding: 1rem;
+  }
+
+  /* Highlight aktif */
+  .dropdown-item.active {
+    background-color: #0d6efd;
+    color: white !important;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+
+  /* Efek hover smooth */
+  .dropdown-item:hover {
+    background-color: #e9ecef;
+    color: #0d6efd;
+    border-radius: 4px;
+  }
+  .dropdown-item {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Animasi dropdown fade-in */
+  .dropdown-menu {
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .dropdown.show .dropdown-menu {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Ikon dan animasi ikon */
+  .dropdown-item i {
+    font-size: 1rem;
+    vertical-align: middle;
+    transition: transform 0.3s ease;
+  }
+  .dropdown-item:hover i {
+    transform: rotate(15deg);
   }
 </style>
 </head>
@@ -116,7 +155,7 @@ fetch(sheetURL)
     filteredData = [...fullData];
     renderTableHeader();
     renderFilterOptions();
-    renderSidebarDropdowns(); // isi dropdown sidebar
+    renderSidebarDropdowns();
     applyFilters();
   });
 
@@ -236,13 +275,26 @@ function renderSidebarDropdowns() {
 
   const rekapB = document.getElementById("rekapKIBB");
   const rekapC = document.getElementById("rekapKIBC");
+
+  const currentFile = window.location.pathname.split("/").pop().toLowerCase();
+
   values.forEach(v => {
+    const baseName = v.toLowerCase().replace(/\s+/g, "-");
+
+    // KIB B
+    const fileB = `${baseName}.html`;
     const liB = document.createElement("li");
-    liB.innerHTML = `<a class="dropdown-item" href="#">${v}</a>`;
+    liB.innerHTML = `<a class="dropdown-item ${currentFile === fileB ? "active" : ""}" href="${fileB}">
+                      <i class="bi bi-file-earmark-text me-2"></i>${v}
+                     </a>`;
     rekapB.appendChild(liB);
 
+    // KIB C
+    const fileC = `${baseName}-c.html`;
     const liC = document.createElement("li");
-    liC.innerHTML = `<a class="dropdown-item" href="#">${v}</a>`;
+    liC.innerHTML = `<a class="dropdown-item ${currentFile === fileC ? "active" : ""}" href="${fileC}">
+                      <i class="bi bi-building me-2"></i>${v}
+                     </a>`;
     rekapC.appendChild(liC);
   });
 }
