@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventarisasi Peralatan Mesin</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .dataTables_wrapper .dt-buttons {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <div class="container py-5">
+    <h2 class="text-2xl font-bold mb-4 text-center">Inventarisasi Peralatan Mesin</h2>
+    <div class="table-responsive">
+      <table id="data-table" class="table table-striped table-bordered display nowrap w-100">
+        <thead class="table-light">
+          <tr>
+            <th>Urut</th>
+            <th>Pengguna Barang</th>
+            <th>Kode Barang</th>
+            <th>Nama Barang</th>
+            <th>Konfirmasi Keberadaan</th>
+            <th>Kondisi</th>
+            <th>Label BMD</th>
+            <th>Penggunaan</th>
+            <th>Nama Pengguna</th>
+            <th>Status Pegawai Pengguna</th>
+            <th>Keterangan Tambahan</th>
+            <th>NIBAR</th>
+            <th>Merek/Tipe</th>
+            <th>Nomor Polisi</th>
+            <th>Nomor Rangka</th>
+            <th>Nomor BPKB</th>
+            <th>Nilai Perolehan</th>
+            <th>Cara Perolehan</th>
+            <th>Perolehan</th>
+            <th>Status Penggunaan</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- jQuery & DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- Tabletop.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tabletop.js/1.5.1/tabletop.min.js"></script>
+
+  <script>
+    function showInfo(data) {
+      const tbody = document.querySelector("#data-table tbody");
+      data.forEach((item, index) => {
+        if (index >= 2) {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.Urut}</td>
+            <td>${item["Pengguna Barang"]}</td>
+            <td>${item["Kode Barang"]}</td>
+            <td>${item["Nama Barang"]}</td>
+            <td>${item["Konfirmasi Keberadaan"]}</td>
+            <td>${item.Kondisi}</td>
+            <td>${item["Label BMD"]}</td>
+            <td>${item.Penggunaan}</td>
+            <td>${item["Nama Pengguna"]}</td>
+            <td>${item["Status Pegawai Pengguna"]}</td>
+            <td>${item["Keterangan Tambahan"]}</td>
+            <td>${item.NIBAR}</td>
+            <td>${item["Merek/Tipe"]}</td>
+            <td>${item["Nomor Polisi"]}</td>
+            <td>${item["Nomor Rangka"]}</td>
+            <td>${item["Nomor BPKB"]}</td>
+            <td>${item["Nilai Perolehan"]}</td>
+            <td>${item["Cara Perolehan"]}</td>
+            <td>${item.Perolehan}</td>
+            <td>${item["Status Penggunaan"]}</td>
+          `;
+          tbody.appendChild(row);
+        }
+      });
+
+      $('#data-table').DataTable({
+        dom: 'Bfrtip',
+        buttons: ['excel'],
+        scrollX: true,
+        language: {
+          search: "Cari:",
+          lengthMenu: "Tampilkan _MENU_ entri",
+          info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+          paginate: {
+            first: "Awal",
+            last: "Akhir",
+            next: "→",
+            previous: "←"
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      Tabletop.init({
+        key: '1JGop98g-bmxX8xq9SpVedCHJ7z8p8aTV',
+        simpleSheet: false,
+        callback: function(data) {
+          const sheet = data["B. Peralatan Mesin"].elements;
+          showInfo(sheet);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
