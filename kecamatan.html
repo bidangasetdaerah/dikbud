@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rekap KIB - Final</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { font-family: Arial, sans-serif; }
+
+    /* Sidebar styles */
+    .dropdown-item.active {
+      background-color: #0d6efd;
+      color: white !important;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .dropdown-item:hover {
+      background-color: #e9ecef;
+      color: #0d6efd;
+      border-radius: 4px;
+    }
+    .dropdown-item { transition: all 0.2s ease-in-out; }
+    .dropdown-item i {
+      font-size: 1rem;
+      vertical-align: middle;
+      transition: transform 0.3s ease;
+    }
+    .dropdown-item:hover i { transform: rotate(15deg); }
+    .dropdown-menu {
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .dropdown.show .dropdown-menu {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Content animation and layout */
+    #contentArea {
+      transition: all 0.3s ease;
+      transform: translateX(0);
+      opacity: 1;
+      position: relative; /* for spinner overlay */
+      min-height: 320px;
+      background: #fff;
+    }
+    #contentArea.hidden {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+
+    /* Spinner overlay centered */
+    .content-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.7);
+      z-index: 50;
+      transition: opacity 0.2s ease;
+      pointer-events: none; /* allow clicks to underlying when hidden */
+      opacity: 0;
+    }
+    .content-spinner.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Make sidebar visually separated */
+    .sidebar-wrap { padding-right: 1rem; border-right: 1px solid #e9ecef; min-height: 100vh; }
+
+    /* Small: truncate long names */
+    .dropdown-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body class="container-fluid p-3">
+
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 sidebar-wrap">
+      <input type="text" id="searchSidebar" class="form-control mb-3" placeholder="Cari kecamatan...">
+
+      <h6 class="fw-bold">Rekap KIB B</h6>
+      <ul id="rekapKIBB" class="dropdown-menu show position-static w-100 mb-3"></ul>
+
+      <h6 class="fw-bold mt-1">Rekap KIB C</h6>
+      <ul id="rekapKIBC" class="dropdown-menu show position-static w-100"></ul>
+    </div>
+
+    <!-- Content -->
+    <div class="col-md-9">
+      <div id="contentArea" class="p-3 border rounded shadow-sm">
+        <!-- Spinner overlay -->
+        <div id="contentSpinner" class="content-spinner" role="status" aria-hidden="true">
+          <div class="text-center">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="mt-2">Memuat data…</div>
+          </div>
+        </div>
+
+        <!-- Initial message -->
+        <div id="initialMessage">
+          <h4>Silakan pilih kecamatan dari sidebar</h4>
+          <p class="text-muted">Konten kecamatan akan dimuat di sini tanpa me-refresh halaman.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DATA (ganti/ambil dari sheet jika perlu)
+    const values = [
+      "Banawa Selatan", "Banawa Tengah", "Banawa",
+      "Labuan", "Sindue", "Sindue Tombusabora",
+      "Sindue Tobata", "Sirenja", "Sojol",
+      "Sojol Utara", "Tanantovea"
+    ];
+
+    const fileMap = {
+      "Banawa Selatan": "bansel.html",
+      "Banawa Tengah": "bantel.html",
+      "Banawa": "banawa.html",
+      "Labuan": "labuan.html",
+      "Sindue": "sindue.html",
+      "Sindue Tombusabora": "sindutombusabora.html",
+      "Sindue Tobata": "sinduetobata.html",
+      "Sirenja": "sirenja.html",
+      "Sojol": "sojol.html",
+      "Sojol Utara": "sojolutara.html",
+      "Tanantovea": "tanantovea.html"
+    };
+
+    // Helper spinner controls
+    function showSpinner() {
+      const sp = document.getElementById("contentSpinner");
+      sp.classList.add("show");
+      sp.setAttribute("aria-hidden", "false");
+    }
+    function hideSpinner() {
+      const sp = document.getElementById("contentSpinner");
+      sp.classList.remove("show");
+      sp.setAttribute("aria-hidden", "true");
+    }
+
+    function renderSidebarDropdowns() {
+      const rekapB = document.getElementById("rekapKIBB");
+      const rekapC = document.getElementById("rekapKIBC");
+      rekapB.innerHTML = "";
+      rekapC.innerHTML = "";
+
+      values.forEach(v => {
+        const fileB = fileMap[v] || "#";
+        const fileC = fileB.replace(".html", "-c.html");
+
+        const liB = document.createElement("li");
+        liB.innerHTML = `<a class="dropdown-item" data-file="${fileB}" href="#" title="${v}">
+                          <i class="bi bi-file-earmark-text me-2"></i><span class="text-truncate">${v}</span>
+                        </a>`;
+        rekapB.appendChild(liB);
+
+        const liC = document.createElement("li");
+        liC.innerHTML = `<a class="dropdown-item" data-file="${fileC}" href="#" title="${v}">
+                          <i class="bi bi-building me-2"></i><span class="text-truncate">${v}</span>
+                        </a>`;
+        rekapC.appendChild(liC);
+      });
+
+      // Klik link sidebar → load konten AJAX + animasi + spinner
+      document.querySelectorAll("#rekapKIBB a, #rekapKIBC a").forEach(link => {
+        link.addEventListener("click", async function(e) {
+          e.preventDefault();
+          const file = this.getAttribute("data-file");
+          if (file && file !== "#") {
+            const contentArea = document.getElementById("contentArea");
+            // show spinner + hide content briefly
+            showSpinner();
+            contentArea.classList.add("hidden");
+
+            try {
+              // small delay so spinner shows even for very fast loads
+              await new Promise(r => setTimeout(r, 150));
+              const res = await fetch(file);
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const html = await res.text();
+
+              setTimeout(() => {
+                // replace content and reveal (slide-in)
+                document.getElementById("initialMessage")?.remove();
+                contentArea.innerHTML = html + document.getElementById("contentSpinner")?.outerHTML;
+                // reattach spinner reference (since innerHTML replaced)
+                const sp = document.getElementById("contentSpinner");
+                if (sp) hideSpinner();
+                contentArea.classList.remove("hidden");
+
+                // Re-insert spinner to remain usable for next loads (if innerHTML removed it)
+                // (Note: code above keeps spinner by appending spinner HTML)
+              }, 300);
+
+            } catch (err) {
+              setTimeout(() => {
+                document.getElementById("initialMessage")?.remove();
+                contentArea.innerHTML = `<div class="p-3"><p class="text-danger">Gagal memuat <strong>${file}</strong>. (${err.message})</p></div>` + document.getElementById("contentSpinner")?.outerHTML;
+                hideSpinner();
+                contentArea.classList.remove("hidden");
+              }, 300);
+            }
+
+            // Highlight active link
+            document.querySelectorAll(".dropdown-item").forEach(i => i.classList.remove("active"));
+            this.classList.add("active");
+          }
+        });
+      });
+
+      // Search filter
+      const searchInput = document.getElementById("searchSidebar");
+      searchInput.addEventListener("input", function() {
+        const keyword = this.value.toLowerCase();
+        document.querySelectorAll("#rekapKIBB li, #rekapKIBC li").forEach(li => {
+          const text = li.innerText.toLowerCase();
+          li.style.display = text.includes(keyword) ? "" : "none";
+        });
+      });
+    }
+
+    // Smooth scroll for in-page anchors
+    document.addEventListener("click", function(e) {
+      const a = e.target.closest('a[href^="#"]');
+      if (a) {
+        const target = document.querySelector(a.getAttribute("href"));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderSidebarDropdowns();
+    });
+  </script>
+
+</body>
+</html>
